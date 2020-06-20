@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <logcleaner>
+            <general>
+                <module_enable>1</module_enable>
+                <log_size_to_clean>1024</log_size_to_clean>
+                <log_clean_type>delete</log_clean_type>
+                <project_id>0</project_id>
+                <project_bucket_name>magento_bucket</project_bucket_name>
+                <project_base_path>pub/media</project_base_path>
+            </general>
+              <cloud>
+                <cloud_backup>0</cloud_backup>
+                <project_id>0</project_id>
+                <project_bucket_name>magento_bucket</project_bucket_name>
+                <project_base_path>pub/media</project_base_path>
+            </cloud>
+        </logcleaner>
+    </default>
+</config>
+

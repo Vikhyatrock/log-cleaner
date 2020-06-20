@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>        
+        <section id="logcleaner" translate="label" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Log Cleaner</label>
+            <tab>catalog</tab>
+            <resource>Future_LogCleaner::logcleaner_config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General Configuration</label>
+                
+                <field id="module_enable" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Module Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field> 
+
+                <field id="log_size_to_clean" translate="label" type="text" sortOrder="21" showInDefault="1">
+                 <label>Log Size</label>
+                 <comment>Logs will be delete when they reach this size</comment>
+                </field>
+                <field id="log_back_up_email" translate="label" type="text" sortOrder="22" showInDefault="1" >
+                 <label>Log BackUp Email</label>
+                 <comment>Logs will be backup to the email if option is enabled</comment>
+                </field>
+                  
+                <field id="log_clean_type" translate="label" sortOrder="24" type="select" showInDefault="1" >
+                    <label>Log clean type</label>
+                    <comment>Pick one depending on your needs</comment>
+                    <source_model>Future\LogCleaner\Model\Config\Source\AllowedOptions</source_model>
+                </field>                
+            </group>
+        <group id="cloud" translate="label" type="text" sortOrder="12" showInDefault="1" showInWebsite="0" showInStore="0">
+                
+                <label>Cloud Back Up</label>
+
+                <field id="cloud_backup" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field> 
+
+                <field id="google_api" translate="label" type="Magento\Config\Block\System\Config\Form\Field\File" sortOrder="6" showInDefault="1" showInWebsite="1" >
+                    <label>Google Api Key</label>
+                    <backend_model>Future\LogCleaner\Model\Config\Backend\File</backend_model>
+                    <upload_dir >pub/media</upload_dir>
+                    <comment>Get the key file from your google console in json format</comment>
+                </field>               
+
+                <field id="project_id" translate="label" type="text" sortOrder="21" showInDefault="1" showInWebsite="1" showInStore="1">
+                 <label>Project ID</label>
+                 <comment>Get this key from your google console</comment>
+                </field>
+               
+                <field id="project_bucket_name" translate="label" type="text" sortOrder="23" showInDefault="1" showInWebsite="1" showInStore="1">
+                 <label>Project Bucket Name</label>
+                 <comment>Get this key from your google console</comment>
+                </field>
+
+                <field id="project_base_path" translate="label" type="text" sortOrder="24" showInDefault="1" showInWebsite="1" showInStore="1">
+                 <label>Project Base Path</label>
+                 <comment>Usually pub/media but on other servers it's rewrite to media </comment>
+                </field>
+
+            </group>
+       </section>
+    </system>
+</config>

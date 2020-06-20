@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="adyen_payment">        
+        <job name="future_logCleaner_process_logs" instance="Future\LogCleaner\Model\Cron" method="processLogs">
+            <schedule>* */1 * * *</schedule>
+        </job>
+    </group>
+</config>
