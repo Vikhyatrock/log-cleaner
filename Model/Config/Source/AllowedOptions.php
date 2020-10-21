@@ -9,10 +9,7 @@ class AllowedOptions implements \Magento\Framework\Option\ArrayInterface
     public function toOptionArray()
     {
         return [
-            ['value' => 'delete', 'label' => __('Delete')],
-            ['value' => 'backupanddelete', 'label' => __('Email Backup and Delete')],
-            ['value' => 'backupcloudanddelete', 'label' => __('Cloud Backup and Delete')]
-        ];
+            ['value' => 'delete', 'label' => __('Delete')]        ];
     }
 }
  

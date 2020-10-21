@@ -3,65 +3,27 @@ namespace Future\LogCleaner\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Future\LogCLeaner\Helper\Storage;
-use Future\LogCLeaner\Helper\Helper;
-use Future\LogCLeaner\Helper\Mail;
-use \ZipArchive;
+use Magento\Framework\Filesystem\DirectoryList;
+use Future\LogCleaner\Helper\Helper;
 
 
 class LogHelper extends AbstractHelper
-{   
-   /**
-    * zip  
-    *
-    * @var ZipArchive
-    */
-   protected $zip;
+{     
    
-   /**
-    * storage
-    *
-    * @var \Future\LogCLeaner\Helper\Storage
-    */
-   protected $storage;
-   
-   /**
-    * helper
-    *
-    * @var \Future\LogCLeaner\Helper\Helper
-    */
-   protected $helper;
-   
-   
-   /**
-    * mail
-    *
-    * @var \Future\LogCLeaner\Helper\Mail
-    */
-   protected $mail;
+    protected $_helper;
 
-   const  VAR_LOG_PATH = "var/log/";
+    protected $_dir;
 
-   const  LOG_ZIP = "var/logs.zip";
- 
-      
-   /**
-    * __construct
-    *
-    * @return void
-    */
+
    public function __construct(
        Context $context,
-       ZipArchive $zip,
-       Storage $storage,
        Helper $helper,
-       Mail $mail
+       DirectoryList $dir
    ) {
-       parent::__construct($context);
-       $this->zip = $zip;
-       $this->storage = $storage;
-       $this->helper = $helper;
-       $this->mail = $mail;
+        $this->_helper = $helper;
+        $this->_dir = $dir;
+        parent::__construct($context);
+       
    }
  
      
@@ -72,32 +34,23 @@ class LogHelper extends AbstractHelper
     */
    public function execute()
    {
-     if($this->helper->getModuleEnable())
+     if($this->_helper->getModuleEnable())
         {
-           if($this->sortSize($this->getFileSize($this->getFiles()))  >= $this->helper->getLogSizeToClean())
+            $maxAllowedSize = (int)($this->_helper->getLogSizeToClean());
+            $totalAvialableLogSize = $this->sortSize($this->getFileSize($this->getFiles()));
+
+           if($totalAvialableLogSize >= $maxAllowedSize )
                 {
-                  switch($this->helper->getLogCleanType())
+                  switch($this->_helper->getLogCleanType())
                     {
                         case 'delete':          
                             $this->deleteFiles($this->getFiles());
-                        break;
-                        case 'backupanddelete':
-                            $this -> createAttachment();
-                            $this->mail->send(self::LOG_ZIP);
-                            $this->deleteFiles($this->getFiles());
-                            $this->deleteZip();                                              
-                        break;
-                        case 'backupcloudanddelete':
-                            $this -> createAttachment();
-                            $this->helper->getCloudBackUpEnabled() ? $this->storage->uploadObject($this->getLogDate()."-log.zip",self::LOG_ZIP):"";
-                            $this->deleteFiles($this->getFiles());
-                            $this->deleteZip();
                         break;
                         default: 
                     break;
                    }
                 }
-        }          
+        }        
 
    }
   
@@ -108,58 +61,33 @@ class LogHelper extends AbstractHelper
     *
     * @return array
     */
-   public function getFiles():array
+   public function getFiles()
      {
-        $files=array();
-            if (is_dir(self::VAR_LOG_PATH)){
-                if ($directoryContent = opendir(self::VAR_LOG_PATH)){
-                    while (($file = readdir($directoryContent)) !== false){
-                      array_push($files , self::VAR_LOG_PATH.$file);
-                    }
-                    closedir($directoryContent);
-                }                
-            }          
-        return $files;
+         return $this->getDirContents($this->_dir->getPath('log') . "/");;
      }
+
+    public function getDirContents($dir, &$results = array())
+    {
+        $files = scandir($dir);
+        foreach ($files as $key => $value) {
+            $path = realpath($dir . DIRECTORY_SEPARATOR . $value);
+            if (!is_dir($path)) {
+                $results[] = $path;
+            } else if ($value != "." && $value != "..") {
+                $this->getDirContents($path, $results);
+                $results[] = $path;
+            }
+        }
+        return $results;
+    }   
     
-    /**
-     * getLogDate
-     *
-     * @return string
-     */
-    public function getLogDate():string
-     {
-        return strtolower(date("j-F-Y_h:i:s-A"));
-     }
-   
-   /**
-    * createAttachment
-    *
-    * @return void
-    */
-   public function createAttachment():void
-     {        
-         if(is_dir(self::VAR_LOG_PATH))
-           {                
-                if($this->zip -> open(self::LOG_ZIP , ZipArchive::CREATE ) === TRUE) {
-                    $dir = opendir(self::VAR_LOG_PATH);
-                    while($file = readdir($dir)) {
-                        if(is_file(self::VAR_LOG_PATH.$file)) {
-                            $this->zip -> addFile(self::VAR_LOG_PATH.$file, $file);
-                        }
-                    }
-                    $this->zip ->close();
-                }
-           }       
-     }
-   
    /**
     * getFileSize
     *
     * @param  array $files
     * @return int
     */
-   public function getFileSize($files=array()):int
+   public function getFileSize($files=array())
      {
          $totalSize=0;
             foreach($files as $file)
@@ -168,28 +96,31 @@ class LogHelper extends AbstractHelper
             }
          return $totalSize;
      }   
-   /**
-    * deleteZip
-    *
-    * @return boolean
-    */
-   public function deleteZip():boolean
-   {
-       return is_file(self::LOG_ZIP)?unlink(self::LOG_ZIP):false;
-   }   
+      
    /**
     * deleteFiles
     *
     * @param  mixed $files
     * @return boolean
     */
-   public function deleteFiles($files=array()):boolean
+   public function deleteFiles($files=array())
     {   
          if($files)
          {
-            foreach($files as $file)
-            {
-                (is_file($file))? unlink($file) : false;
+             foreach($files as $file)
+            {                   
+                if(is_file($file))
+                   {                    
+                    try{
+                        unlink($file);
+                    }
+                    catch(\Exception $e)
+                    {
+                        //Writing to the error to logs here will cause an endless loop
+                        /** it will dispatch an event and the observer will run ,
+                         * attempting to delete the file again loggin another exception creating loop */
+                    }                    
+                   }                   
             }
          }        
      }
