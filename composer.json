@@ -3,6 +3,7 @@
     "description": "Future Log Cleaner module",
     "type": "magento2-module",
     "license": "proprietary",
+    "version": "2.0.0",
     "authors": [
         {
             "name": "Regis Tembachako",
