@@ -6,6 +6,7 @@
                 <module_enable>1</module_enable>
                 <log_size_to_clean>1024</log_size_to_clean>
                 <log_clean_type>delete</log_clean_type>
+                <log_clean_type>delete</log_clean_type>
             </general>
         </logcleaner>
     </default>
